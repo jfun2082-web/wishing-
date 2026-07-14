@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy Birthday, Priya</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{ height:100%; overflow:hidden; }
+  body{ font-family:'Inter', sans-serif; }
+
+  #stage{
+    position:relative; width:100%; height:100vh; overflow:hidden;
+    transition: background-color 650ms cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* grain */
+  .grain{
+    position:absolute; inset:0; pointer-events:none; z-index:50; opacity:0.4;
+    background-size:200px 200px; background-repeat:repeat;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.08 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ghost text */
+  .ghost-wrap{
+    position:absolute; inset-inline:0; top:14%; z-index:2;
+    display:flex; align-items:center; justify-content:center;
+    pointer-events:none; user-select:none;
+  }
+  .ghost{
+    font-family:'Anton', sans-serif; font-weight:900; color:#fff; opacity:1;
+    line-height:1; text-transform:uppercase; letter-spacing:-0.02em; white-space:nowrap;
+    font-size: clamp(70px, 20vw, 300px);
+  }
+
+  /* brand label */
+  .brand{
+    position:absolute; top:24px; left:16px; z-index:60;
+    font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.18em;
+    color:#fff; opacity:0.9;
+  }
+  @media(min-width:640px){ .brand{ left:32px; } }
+
+  /* carousel */
+  .carousel{ position:absolute; inset:0; z-index:3; }
+  .card{
+    position:absolute; aspect-ratio:0.72/1;
+    transition: transform 650ms cubic-bezier(0.4,0,0.2,1), filter 650ms cubic-bezier(0.4,0,0.2,1),
+                opacity 650ms cubic-bezier(0.4,0,0.2,1), left 650ms cubic-bezier(0.4,0,0.2,1);
+    will-change: transform, filter, opacity;
+    border-radius:18px; overflow:hidden;
+    background:rgba(255,255,255,0.18);
+    display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px;
+    color:#fff; font-size:0.8rem; box-shadow:0 30px 60px rgba(0,0,0,0.25);
+  }
+  .card img{ width:100%; height:100%; object-fit:cover; }
+
+  /* bottom-left */
+  .info{
+    position:absolute; bottom:24px; left:16px; z-index:60; max-width:320px;
+  }
+  @media(min-width:640px){ .info{ bottom:80px; left:96px; } }
+  .info-title{
+    font-weight:700; text-transform:uppercase; letter-spacing:0.02em; color:#fff; opacity:0.95;
+    font-size:1rem; margin-bottom:8px;
+  }
+  @media(min-width:640px){ .info-title{ font-size:1.375rem; margin-bottom:12px; } }
+  .info-sub{
+    display:none; color:#fff; opacity:0.85; line-height:1.6; font-size:0.85rem; margin-bottom:20px;
+  }
+  @media(min-width:640px){ .info-sub{ display:block; } }
+
+  .nav-btn{
+    width:48px; height:48px; border-radius:50%; border:2px solid #fff; background:transparent;
+    color:#fff; display:inline-flex; align-items:center; justify-content:center; cursor:pointer;
+    transition: transform 150ms, background-color 150ms; margin-right:12px;
+  }
+  @media(min-width:640px){ .nav-btn{ width:64px; height:64px; } }
+  .nav-btn:hover{ transform:scale(1.08); background:rgba(255,255,255,0.12); }
+  .nav-btn svg{ width:22px; height:22px; }
+  @media(min-width:640px){ .nav-btn svg{ width:26px; height:26px; } }
+
+  /* bottom-right wish link */
+  .wish-link{
+    position:absolute; bottom:24px; right:16px; z-index:60;
+    display:flex; align-items:center; gap:8px; text-decoration:none; cursor:pointer;
+    font-family:'Anton', sans-serif; color:#fff; opacity:0.95; text-transform:uppercase;
+    letter-spacing:-0.02em; line-height:1; font-size:clamp(16px,3.4vw,40px);
+    transition:opacity 200ms; background:none; border:none;
+  }
+  @media(min-width:640px){ .wish-link{ bottom:80px; right:40px; } }
+  .wish-link:hover{ opacity:1; }
+  .wish-link svg{ width:18px; height:18px; }
+  @media(min-width:640px){ .wish-link svg{ width:28px; height:28px; } }
+
+  /* wish overlay */
+  #wishOverlay{
+    position:fixed; inset:0; z-index:200; display:flex; align-items:center; justify-content:center;
+    background:rgba(20,10,35,0.72); backdrop-filter:blur(6px);
+    opacity:0; visibility:hidden; transition:opacity .4s ease, visibility .4s ease;
+    padding:20px; text-align:center;
+  }
+  #wishOverlay.show{ opacity:1; visibility:visible; }
+  .wish-card{
+    background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); border-radius:24px;
+    padding:48px 36px; max-width:420px;
+  }
+  .cake{ font-size:4rem; cursor:pointer; user-select:none; display:inline-block; transition:transform .2s ease; }
+  .cake:hover{ transform:scale(1.06); }
+  .wish-hint{ margin-top:14px; color:#fff; opacity:0.75; font-size:0.9rem; }
+  .wish-message{
+    margin-top:20px; font-family:'Caveat', cursive; font-weight:700; font-size:1.7rem; color:#FFC93C;
+    opacity:0; transform:translateY(8px); transition:opacity .5s ease, transform .5s ease;
+  }
+  .wish-message.show{ opacity:1; transform:translateY(0); }
+  .close-btn{
+    margin-top:26px; background:transparent; border:1px solid rgba(255,255,255,0.4); color:#fff;
+    padding:10px 22px; border-radius:100px; font-family:'Inter',sans-serif; font-size:0.85rem; cursor:pointer;
+  }
+  .close-btn:hover{ background:rgba(255,255,255,0.12); }
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <div class="grain"></div>
+
+  <div class="ghost-wrap"><span class="ghost">PRIYA</span></div>
+
+  <div class="brand">Happy Birthday</div>
+
+  <div class="carousel" id="carousel">
+    <div class="card" data-idx="0"><img src="photo1.jpg" alt="Priya"></div>
+    <div class="card" data-idx="1"><img src="photo2.jpg" alt="Priya"></div>
+    <div class="card" data-idx="2"><img src="photo3.jpg" alt="Priya"></div>
+    <div class="card" data-idx="3"><img src="photo4.jpg" alt="Priya"></div>
+  </div>
+
+  <div class="info">
+    <p class="info-title">Priya's Birthday</p>
+    <p class="info-sub">Another year of you — here's to celebrating everything that makes you, you.</p>
+    <button class="nav-btn" id="prevBtn" aria-label="Previous">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+    </button>
+    <button class="nav-btn" id="nextBtn" aria-label="Next">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+    </button>
+  </div>
+
+  <button class="wish-link" id="wishBtn">
+    MAKE A WISH
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+  </button>
+</div>
+
+<div id="wishOverlay">
+  <div class="wish-card">
+    <div class="cake" id="cake" tabindex="0" role="button" aria-label="Blow out the candle">🎂🕯️</div>
+    <p class="wish-hint">tap the cake</p>
+    <div class="wish-message" id="wishMsg">Happy Birthday, Priya 💫</div>
+    <br>
+    <button class="close-btn" id="closeBtn">close</button>
+  </div>
+</div>
+
+<script>
+  const PALETTE = [
+    { bg:'#F4845F' }, { bg:'#6BBF7A' }, { bg:'#E882B4' }, { bg:'#6EB5FF' }
+  ];
+
+  const stage = document.getElementById('carousel').parentElement;
+  const cards = Array.from(document.querySelectorAll('.card'));
+  let activeIndex = 0;
+  let isAnimating = false;
+  let isMobile = window.innerWidth < 640;
+  window.addEventListener('resize', () => { isMobile = window.innerWidth < 640; render(); });
+
+  function roleFor(i){
+    const center = activeIndex, left = (activeIndex+3)%4, right=(activeIndex+1)%4;
+    if(i===center) return 'center';
+    if(i===left) return 'left';
+    if(i===right) return 'right';
+    return 'back';
+  }
+
+  function styleFor(role){
+    switch(role){
+      case 'center': return {
+        left:'50%', bottom: isMobile? '22%':'0%', height: isMobile? '55%':'88%',
+        transform:`translateX(-50%) scale(${isMobile?1.1:1.35})`, filter:'blur(0px)', opacity:1, zIndex:20
+      };
+      case 'left': return {
+        left: isMobile? '18%':'28%', bottom: isMobile? '30%':'14%', height: isMobile? '18%':'30%',
+        transform:'translateX(-50%) scale(1)', filter:'blur(2px)', opacity:0.85, zIndex:10
+      };
+      case 'right': return {
+        left: isMobile? '82%':'72%', bottom: isMobile? '30%':'14%', height: isMobile? '18%':'30%',
+        transform:'translateX(-50%) scale(1)', filter:'blur(2px)', opacity:0.85, zIndex:10
+      };
+      case 'back': return {
+        left:'50%', bottom: isMobile? '30%':'14%', height: isMobile? '14%':'24%',
+        transform:'translateX(-50%) scale(1)', filter:'blur(4px)', opacity:1, zIndex:5
+      };
+    }
+  }
+
+  function render(){
+    stage.style.backgroundColor = PALETTE[activeIndex].bg;
+    cards.forEach((card, i) => {
+      const role = roleFor(i);
+      const s = styleFor(role);
+      card.style.left = s.left;
+      card.style.bottom = s.bottom;
+      card.style.height = s.height;
+      card.style.transform = s.transform;
+      card.style.filter = s.filter;
+      card.style.opacity = s.opacity;
+      card.style.zIndex = s.zIndex;
+    });
+  }
+  render();
+
+  function navigate(dir){
+    if(isAnimating) return;
+    isAnimating = true;
+    activeIndex = dir==='next' ? (activeIndex+1)%4 : (activeIndex+3)%4;
+    render();
+    setTimeout(()=> isAnimating=false, 650);
+  }
+  document.getElementById('prevBtn').addEventListener('click', ()=>navigate('prev'));
+  document.getElementById('nextBtn').addEventListener('click', ()=>navigate('next'));
+
+  // Wish overlay
+  const overlay = document.getElementById('wishOverlay');
+  document.getElementById('wishBtn').addEventListener('click', ()=> overlay.classList.add('show'));
+  document.getElementById('closeBtn').addEventListener('click', ()=>{
+    overlay.classList.remove('show');
+    cake.textContent='🎂🕯️'; wishMsg.classList.remove('show');
+  });
+
+  const cake = document.getElementById('cake');
+  const wishMsg = document.getElementById('wishMsg');
+  function blowCandle(){
+    cake.textContent='🎂';
+    wishMsg.classList.add('show');
+    const rect = cake.getBoundingClientRect();
+    burstConfetti(rect.left+rect.width/2, rect.top, 80);
+  }
+  cake.addEventListener('click', blowCandle);
+  cake.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); blowCandle(); } });
+
+  function burstConfetti(x,y,count){
+    const colors=['#F4845F','#6BBF7A','#E882B4','#6EB5FF','#FFC93C'];
+    for(let i=0;i<count;i++){
+      const c=document.createElement('div');
+      const size=6+Math.random()*7;
+      c.style.position='fixed'; c.style.left=x+'px'; c.style.top=y+'px';
+      c.style.width=size+'px'; c.style.height=(size*1.4)+'px';
+      c.style.background=colors[Math.floor(Math.random()*colors.length)];
+      c.style.zIndex=300; c.style.borderRadius='2px'; c.style.pointerEvents='none';
+      document.body.appendChild(c);
+      const angle=Math.random()*Math.PI*2, velocity=4+Math.random()*9;
+      let vx=Math.cos(angle)*velocity, vy=Math.sin(angle)*velocity-6;
+      let posX=x, posY=y, rot=0; const spin=(Math.random()-0.5)*22; const gravity=0.28; let frame=0;
+      function animate(){
+        frame++; vy+=gravity; posX+=vx; posY+=vy; rot+=spin;
+        c.style.transform=`translate(${posX-x}px, ${posY-y}px) rotate(${rot}deg)`;
+        c.style.opacity=Math.max(0,1-frame/70);
+        if(frame<70){ requestAnimationFrame(animate); } else { c.remove(); }
+      }
+      requestAnimationFrame(animate);
+    }
+  }
+</script>
+
+</body>
+</html>
